@@ -1,0 +1,90 @@
+#include <iostream>
+#include <bits/stdc++.h>
+#define var long long int
+#define repN(i, N) for (var i = 0; i < (var)N; i ++)
+#define rep(i, A, B) for (var i = A; i < (var)B; i ++)
+#define FIO ios::sync_with_stdio(false);
+using namespace std;
+//visited array
+bool vis[200200];
+//graph structure
+vector<ll> g[200200];
+pair<ll, ll> deepth[200200];
+pair<pair<ll, ll>, ll> roo[200200];
+bool industry[200200];
+void dfs1(ll v, ll p, ll hup) {
+    deepth[v].first-=hup;
+    //cout << "h: " << v << " " << hup << endl;
+    if(industry[v])
+        hup++;
+    for(auto ch : g[v])
+    {
+        if(ch!=p)
+        {
+            dfs1(ch, v, hup);
+        }
+    }
+}
+void dfs2(ll v, ll p)
+{
+    ll sum = 0;
+    for(auto ch : g[v])
+    {
+        if(ch!=p)
+        {
+            dfs2(ch, v);
+            sum+=roo[ch].first.second;
+        }
+    }
+    roo[v] = {{-1ll*deepth[v].first, sum+1}, v};
+}
+int main()
+{
+    ll n, k;
+    cin >> n >> k;
+    ll a, b;
+    for(ll i = 0; i < n-1; i ++)
+    {
+        cin >> a >> b;
+        g[a].push_back(b);
+        g[b].push_back(a);
+    }
+    queue <ll> q;
+    ll dep = 0;
+    vis[1] = 1;
+    q.push(1);
+    deepth[1] = {0, 1};
+    while(q.size())
+    {
+        ll sz = q.size();
+        for(ll i = 0; i < sz; i++)
+        {
+            ll cur = q.front(); q.pop();
+            deepth[cur] = {dep, cur};
+            for(auto ch : g[cur])
+            {
+                if(!vis[ch])
+                {
+                    q.push(ch);
+                    vis[ch]= 1;
+                }
+            }
+        }
+        dep++;
+    }
+    ll ans = 0;
+    dfs2(1, -1);
+    sort(roo+1, roo+n+1);
+    for(ll i = 1; i <= k; i++)
+    {
+        industry[roo[i].second] = 1;
+        //cout << roo[i].second << endl;
+    }
+    dfs1(1,-1, 0);
+    for(ll i = 1; i <= k; i++)
+    {
+        ans += deepth[roo[i].second].first;
+    }
+    cout << ans << endl;
+    return 0;
+}
